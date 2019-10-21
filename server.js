@@ -161,20 +161,81 @@ app.get('/display', (req, res) => {
 });
 
 app.post('/newUser', (req,res) => {
-    var a=req.body.data;
-      console.log(a)
-    var ref=database.ref("/users")
-    ref.child(1).set({
-        '1st Mnth':a["1st Mnth"],
-        'Balance as on':a["Balance as on"],
-        'CaseNo':a["CaseNo"],
-        'EMI':a["EMI"],
-        'Last Month':a["Last Month"],
-        'Name':a["Name"],
-        'Term':a["Term"],
-        'date':a["date"],
-        'loan':a["loan"]
+
+     
+        var a=[];
+        // Get a reference to the database service
+        var database = firebase.database();
+      var ref=database.ref("/users")
+       ref.once('value', gotData,errData).then(function(){
+       var l=a.length
+       console.log(a[l-1])
+       var nextEle=parseInt(a[l-1])+1;
+       console.log(req.body)
+       var EMI={}
+    for(var i=1;i<=req.body["Term"];i++){
+        var month=""+i;
+        EMI[month]={
+            "AmountRecieved":"NIL",
+            "ModeCash":"NIL",
+            "ModeCheque":"NIL",
+            "ModeDeposit":"NIL",
+            "RecievedOn":"NIL",
+            "RecievedBy":"NIL",
+            "MoneyRecieved":0
+        }
+    }
+    console.log(EMI)
+        var ref=database.ref("/users")
+        ref.child(nextEle).set({
+        '1st Mnth':req.body["1st Month"],
+        'Balance':req.body["Balance"],
+        "Cheque":"",
+        'Date':req.body["Date"],
+        "EMI":EMI,
+        'EMII':req.body["EMI"],
+        'Last Month':req.body["Last Month"],
+        'Name':req.body["Name"],
+        'Term':req.body["Term"],
+        "Total":"",
+        "due":"",
+        'loan':req.body["Loan"],
+        "CurrentMonth":"Month 1"
     });
+    
+    var ref=database.ref("/users")
+        ref.child(nextEle).update({
+        EMI
+    }).then(function(res){
+        console.log(res)
+    })
+      
+        
+      })
+      
+      function gotData(data){
+          if(data.val()==undefined||data.val()==null){
+              a=a.push(0)
+          }   
+          else{
+              a=Object.keys(data.val())
+       
+          }
+          
+        console.log("C"+a.length)
+       
+      }
+        
+       
+      function errData(err){
+          console.log(err)
+      }
+    
+    
+    
+    // var a=req.body.data;
+    //   console.log(a)
+   
     
   
   })
@@ -221,7 +282,7 @@ app.post('/newUser', (req,res) => {
 //    console.log(typeof(key))
 //    console.log(key)
 try {
-    res.send(data.val())
+    res.send(data)
     
 } catch (error) {
     console.log(error)
@@ -237,7 +298,74 @@ try {
   }
 })
 
+app.post('/fireAshish', (req,res) => {
+    var a=[]
+    var resultS
+    var key
+    
 
+
+  var ref=database.ref("/users")
+  ref.on('value',gotData,errData)
+  
+  
+  function gotData(data){
+//    var key=Object.keys(data.val())
+//    console.log(typeof(key))
+//    console.log(key)
+try {
+    res.send(Object.keys(data.val()))
+    
+} catch (error) {
+    console.log(error)
+}
+  
+ 
+  
+  }
+    
+  
+  function errData(err){
+      console.log(err)
+  }
+})
+
+app.post('/fireAshishIndivisual', (req,res) => {
+   var cno=req.body.caseNo;
+
+
+  var ref=database.ref("/users").child(cno)
+  ref.on('value',gotData,errData)
+  
+  
+  function gotData(data){
+//    var key=Object.keys(data.val())
+//    console.log(typeof(key))
+var i;
+var v=data.val()
+    //   for(i in v["EMI"]){
+    //       delete v["EMI"][i]
+    //   }
+      delete v["EMI"]
+try {
+    
+    console.log(v)
+    res.send(v)
+    
+    
+} catch (error) {
+    console.log(error)
+}
+  
+ 
+  
+  }
+    
+  
+  function errData(err){
+      console.log(err)
+  }
+})
 app.post('/recieve', (req,res) => {
 
 
@@ -300,32 +428,7 @@ var jso={
 })
 
 app.post('/lastElement', (req,res) => {
-    var a=[];
-  // Get a reference to the database service
-  var database = firebase.database();
-var ref=database.ref("/users")
-ref.once('value',gotData,errData).then(function(){
- var l=a.length
- res.send(a[l])
-  
-})
-
-function gotData(data){
-   try{
-       a=Object.keys(data.val())
-   }
-   catch(exce){
-       a=[0,1]
-   }
- 
-  // console.log(a.length)
- 
-}
-  
-  console.log("BBBBBBBB"+a)
-function errData(err){
-    console.log(err)
-}
+   
 //  console.log(a)
     
   
@@ -339,5 +442,5 @@ app.use(function (req, res, next) {
 
 
 // start the express server
-app.listen(app.get('port'), () => console.log(`App started on port ${app.get('port')}`));
+app.listen(app.get('port'), () => console.log(`http://localhost:${app.get('port')}`));
 
