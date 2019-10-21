@@ -315,7 +315,9 @@ app.post('/fireAshishIndivisual', (req,res) => {
 //    console.log(typeof(key))
 //    console.log(key)
 try {
-    res.send(data)
+    var v=data.val()
+    delete v["EMI"]
+    res.send(v)
     
 } catch (error) {
     console.log(error)
